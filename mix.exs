@@ -23,7 +23,7 @@ defmodule PhoenixSrcset.MixProject do
         source_url: @repo_url,
         homepage_url: @repo_url,
         main: "readme",
-        extras: ["README.md"]
+        extras: ["README.md", "CHANGELOG.md"]
       ]
     ]
   end
@@ -35,7 +35,7 @@ defmodule PhoenixSrcset.MixProject do
       links: %{
         GitHub: @repo_url
       },
-      files: ~w(lib .formatter.exs mix.exs README.md LICENSE)
+      files: ~w(lib .formatter.exs mix.exs README.md CHANGELOG.md LICENSE)
     ]
   end
 
