@@ -213,9 +213,7 @@ defmodule Mix.Tasks.Version do
         if Version.compare(new_v, current_v) == :gt do
           :ok
         else
-          Mix.raise(
-            "New version #{new} must be greater than current version #{current}"
-          )
+          Mix.raise("New version #{new} must be greater than current version #{current}")
         end
 
       _ ->
@@ -229,9 +227,7 @@ defmodule Mix.Tasks.Version do
         :ok
 
       {output, 0} ->
-        Mix.raise(
-          "Repository has uncommitted changes:\n#{output}\nCommit or stash them first."
-        )
+        Mix.raise("Repository has uncommitted changes:\n#{output}\nCommit or stash them first.")
 
       {error, _} ->
         Mix.raise("Failed to check git status: #{error}")

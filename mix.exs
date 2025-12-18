@@ -1,7 +1,7 @@
 defmodule PhoenixSrcset.MixProject do
   use Mix.Project
 
-  @version "0.1.0"
+  @version "0.0.1"
   @repo_url "https://github.com/Valian/phoenix_srcset"
 
   def project do
@@ -13,7 +13,8 @@ defmodule PhoenixSrcset.MixProject do
       deps: deps(),
 
       # Hex
-      description: "Dead-simple responsive images for Phoenix. Generate srcset variants with ImageMagick.",
+      description:
+        "Dead-simple responsive images for Phoenix. Generate srcset variants with ImageMagick.",
       package: package(),
 
       # Docs

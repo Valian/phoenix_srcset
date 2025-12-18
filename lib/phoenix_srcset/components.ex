@@ -39,14 +39,14 @@ defmodule PhoenixSrcset.Components do
       />
 
   """
-  attr :src, :string, required: true
-  attr :alt, :string, required: true
-  attr :widths, :list, default: nil
-  attr :sizes, :string, default: "100vw"
-  attr :format, :string, default: nil
-  attr :class, :string, default: nil
-  attr :loading, :string, default: "lazy"
-  attr :rest, :global
+  attr(:src, :string, required: true)
+  attr(:alt, :string, required: true)
+  attr(:widths, :list, default: nil)
+  attr(:sizes, :string, default: "100vw")
+  attr(:format, :string, default: nil)
+  attr(:class, :string, default: nil)
+  attr(:loading, :string, default: "lazy")
+  attr(:rest, :global)
 
   def responsive_img(assigns) do
     widths = assigns.widths || PhoenixSrcset.default_widths()
@@ -90,14 +90,14 @@ defmodule PhoenixSrcset.Components do
       />
 
   """
-  attr :src, :string, required: true
-  attr :alt, :string, required: true
-  attr :widths, :list, default: nil
-  attr :sizes, :string, default: "100vw"
-  attr :format, :string, default: nil
-  attr :class, :string, default: nil
-  attr :loading, :string, default: "lazy"
-  attr :rest, :global
+  attr(:src, :string, required: true)
+  attr(:alt, :string, required: true)
+  attr(:widths, :list, default: nil)
+  attr(:sizes, :string, default: "100vw")
+  attr(:format, :string, default: nil)
+  attr(:class, :string, default: nil)
+  attr(:loading, :string, default: "lazy")
+  attr(:rest, :global)
 
   def responsive_picture(assigns) do
     widths = assigns.widths || PhoenixSrcset.default_widths()
