@@ -23,7 +23,7 @@ Add to your `mix.exs`:
 ```elixir
 def deps do
   [
-    {:phoenix_srcset, "~> 0.1.0"}
+    {:phoenix_srcset, "~> 0.1"}
   ]
 end
 ```
