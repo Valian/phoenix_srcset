@@ -1,5 +1,9 @@
 # PhoenixSrcset
 
+[![Hex.pm](https://img.shields.io/hexpm/v/phoenix_srcset.svg)](https://hex.pm/packages/phoenix_srcset)
+[![Docs](https://img.shields.io/badge/docs-hexdocs.pm-purple)](https://hexdocs.pm/phoenix_srcset)
+[![GitHub](https://img.shields.io/github/stars/Valian/phoenix_srcset?style=social)](https://github.com/Valian/phoenix_srcset)
+
 A dead-simple solution for responsive images in Phoenix. No cloud services, no complex pipelines—just ImageMagick and a mix task.
 
 ## Why?
