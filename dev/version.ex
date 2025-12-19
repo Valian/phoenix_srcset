@@ -237,17 +237,7 @@ defmodule Mix.Tasks.Version do
   defp run_tests do
     Mix.shell().info("")
 
-    port =
-      Port.open({:spawn_executable, System.find_executable("mix")}, [
-        :exit_status,
-        :binary,
-        args: ["test", "--color"],
-        env: [{~c"MIX_ENV", ~c"test"}]
-      ])
-
-    result = collect_port_output(port)
-
-    case result do
+    case run_cmd("mix", ["test", "--color"], env: [{"MIX_ENV", "test"}]) do
       {:ok, 0} -> :ok
       {:ok, _} -> Mix.raise("Tests failed")
       {:error, reason} -> Mix.raise("Failed to run tests: #{reason}")
@@ -266,6 +256,63 @@ defmodule Mix.Tasks.Version do
       300_000 ->
         Port.close(port)
         {:error, :timeout}
+    end
+  end
+
+  # Run a command with streaming output and optional interactivity
+  defp run_cmd(cmd, args, opts \\ []) do
+    env = Keyword.get(opts, :env, [])
+    interactive? = Keyword.get(opts, :interactive, false)
+
+    if interactive? do
+      # For interactive commands, use :os.cmd which connects to the TTY
+      # or use Port with proper stdin handling
+      run_interactive_cmd(cmd, args, env)
+    else
+      run_streaming_cmd(cmd, args, env)
+    end
+  end
+
+  defp run_streaming_cmd(cmd, args, env) do
+    executable = System.find_executable(cmd) || Mix.raise("Command not found: #{cmd}")
+
+    port =
+      Port.open({:spawn_executable, executable}, [
+        :exit_status,
+        :binary,
+        :stderr_to_stdout,
+        args: args,
+        env: Enum.map(env, fn {k, v} -> {to_charlist(k), to_charlist(v)} end)
+      ])
+
+    collect_port_output(port)
+  end
+
+  defp run_interactive_cmd(cmd, args, env) do
+    # Build command string for shell execution
+    escaped_args = Enum.map(args, &escape_shell_arg/1)
+    cmd_string = Enum.join([cmd | escaped_args], " ")
+
+    # Set environment variables
+    env_prefix =
+      env
+      |> Enum.map(fn {k, v} -> "#{k}=#{escape_shell_arg(v)}" end)
+      |> Enum.join(" ")
+
+    full_cmd = if env_prefix == "", do: cmd_string, else: "#{env_prefix} #{cmd_string}"
+
+    # Use Mix.shell().cmd which handles TTY correctly
+    case Mix.shell().cmd(full_cmd) do
+      0 -> {:ok, 0}
+      code -> {:ok, code}
+    end
+  end
+
+  defp escape_shell_arg(arg) when is_binary(arg) do
+    if String.contains?(arg, [" ", "\"", "'", "$", "`", "\\", "\n"]) do
+      "'" <> String.replace(arg, "'", "'\\''") <> "'"
+    else
+      arg
     end
   end
 
@@ -349,8 +396,15 @@ defmodule Mix.Tasks.Version do
     files = [@mix_exs_path, @readme_path, @changelog_path]
 
     unless dry_run? do
-      {_, 0} = System.cmd("git", ["add" | files])
-      {_, 0} = System.cmd("git", ["commit", "-m", "Release v#{new_version}"])
+      case run_cmd("git", ["add" | files]) do
+        {:ok, 0} -> :ok
+        _ -> Mix.raise("Failed to stage files")
+      end
+
+      case run_cmd("git", ["commit", "-m", "Release v#{new_version}"]) do
+        {:ok, 0} -> :ok
+        _ -> Mix.raise("Failed to create commit")
+      end
     end
 
     :ok
@@ -360,7 +414,10 @@ defmodule Mix.Tasks.Version do
     tag = "v#{new_version}"
 
     unless dry_run? do
-      {_, 0} = System.cmd("git", ["tag", "-a", tag, "-m", "Release #{tag}"])
+      case run_cmd("git", ["tag", "-a", tag, "-m", "Release #{tag}"]) do
+        {:ok, 0} -> :ok
+        _ -> Mix.raise("Failed to create tag")
+      end
     end
 
     :ok
@@ -370,8 +427,15 @@ defmodule Mix.Tasks.Version do
     tag = "v#{new_version}"
 
     unless dry_run? do
-      {_, 0} = System.cmd("git", ["push", "origin", "HEAD"])
-      {_, 0} = System.cmd("git", ["push", "origin", tag])
+      case run_cmd("git", ["push", "origin", "HEAD"]) do
+        {:ok, 0} -> :ok
+        _ -> Mix.raise("Failed to push commit")
+      end
+
+      case run_cmd("git", ["push", "origin", tag]) do
+        {:ok, 0} -> :ok
+        _ -> Mix.raise("Failed to push tag")
+      end
     end
 
     :ok
@@ -392,9 +456,9 @@ defmodule Mix.Tasks.Version do
         changelog_section
       ]
 
-      case System.cmd("gh", args, stderr_to_stdout: true) do
-        {_, 0} -> :ok
-        {error, _} -> Mix.raise("Failed to create GitHub release: #{error}")
+      case run_cmd("gh", args) do
+        {:ok, 0} -> :ok
+        _ -> Mix.raise("Failed to create GitHub release")
       end
     end
 
@@ -416,10 +480,10 @@ defmodule Mix.Tasks.Version do
 
   defp publish_to_hex(dry_run?) do
     unless dry_run? do
-      # Use --yes to avoid interactive prompt
-      case System.cmd("mix", ["hex.publish", "--yes"], stderr_to_stdout: true) do
-        {_, 0} -> :ok
-        {error, _} -> Mix.raise("Failed to publish to Hex: #{error}")
+      # Interactive to allow password prompts if needed
+      case run_cmd("mix", ["hex.publish"], interactive: true) do
+        {:ok, 0} -> :ok
+        _ -> Mix.raise("Failed to publish to Hex")
       end
     end
 

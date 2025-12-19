@@ -9,6 +9,7 @@ defmodule PhoenixSrcset.MixProject do
       app: :phoenix_srcset,
       version: @version,
       elixir: "~> 1.14",
+      elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
 
@@ -45,6 +46,9 @@ defmodule PhoenixSrcset.MixProject do
       extra_applications: [:logger]
     ]
   end
+
+  defp elixirc_paths(:dev), do: ["lib", "dev"]
+  defp elixirc_paths(_), do: ["lib"]
 
   defp deps do
     [

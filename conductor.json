@@ -1,0 +1,6 @@
+{
+    "scripts": {
+        "setup": "mix deps.get && mix compile",
+        "run": "mix test"
+    }
+}
